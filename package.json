@@ -1,0 +1,27 @@
+{
+  "name": "@abartonicek/utilities",
+  "version": "0.0.3",
+  "type": "module",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --p ./tsconfig-build.json && vite build",
+    "preview": "vite preview",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.10",
+    "path": "^0.12.7",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vite-plugin-dts": "^3.6.3"
+  },
+  "dependencies": {},
+  "publishConfig": {
+    "access": "public"
+  }
+}
