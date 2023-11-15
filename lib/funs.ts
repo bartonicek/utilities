@@ -95,6 +95,12 @@ export function orderBy<T>(array: T[], orderArray: number[]) {
   return result;
 }
 
+export function match<T>(array: T[], table: T[]) {
+  const result = [] as number[];
+  for (let i = 0; i < array.length; i++) result.push(table.indexOf(array[i]));
+  return result;
+}
+
 // Object functions
 
 export function allKeys<T extends Record<Key, any>>(x: T) {
