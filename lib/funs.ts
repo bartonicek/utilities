@@ -75,7 +75,7 @@ export function seq(start: number, end: number) {
   return Array.from(Array(length), (_, i) => start + sign * i);
 }
 
-export function minMax(x: number[]) {
+export function minMax(x: number[]): [number, number] {
   let [min, max] = [Infinity, -Infinity];
   for (let i = 0; i < x.length; i++) {
     min = Math.min(min, x[i]);
