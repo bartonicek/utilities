@@ -2,6 +2,15 @@
 
 import { Key } from "./types";
 
+export const just =
+  <T>(x: T) =>
+  () =>
+    x;
+
+export const zero = just(0);
+export const one = just(1);
+export const POJO = just({});
+
 export function noop() {}
 
 export function identity<T>(x: T) {
@@ -22,10 +31,6 @@ export function firstArgument<T>(x: T, _: any) {
 
 export function secondArgument<T>(_: any, y: T) {
   return y;
-}
-
-export function POJO() {
-  return {};
 }
 
 export function inSequence(fn1: Function, fn2: Function) {
