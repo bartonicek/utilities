@@ -49,6 +49,12 @@ export function asInt(x: string) {
   return parseInt(x, 10);
 }
 
+// Text manipulation functions
+
+export function capitalize(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 // Binary functions
 
 export function diff(x: number, y: number) {
