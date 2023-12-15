@@ -1,7 +1,5 @@
 // Higher order-ish utility functions
 
-import { Key } from "./types";
-
 export const just =
   <T>(x: T) =>
   () =>
@@ -40,13 +38,13 @@ export function inSequence(fn1: Function, fn2: Function) {
   };
 }
 
-export function unwrap(x: { value: () => any }) {
+export function unwrap<T>(x: { value: () => T }) {
   return x.value();
 }
 
 // Unary functions
 
-export function asString(x: any) {
+export function asString(x: { toString(): string }) {
   return x.toString();
 }
 
@@ -106,38 +104,50 @@ export function orderBy<T>(array: T[], orderArray: number[]) {
   return result;
 }
 
-export function match<T>(array: T[], table: T[]) {
+export function match<T>(array: T[], lookup: T[]) {
   const result = [] as number[];
-  for (let i = 0; i < array.length; i++) result.push(table.indexOf(array[i]));
+  for (let i = 0; i < array.length; i++) result.push(lookup.indexOf(array[i]));
   return result;
 }
 
 // Object functions
 
-export function allKeys<T extends Record<Key, any>>(x: T) {
-  return Reflect.ownKeys(x) as (keyof T)[];
+export function keys<T extends Record<PropertyKey, unknown>>(object: T) {
+  return Object.keys(object) as (keyof T)[];
 }
 
-export function allValues<T extends Record<Key, any>>(x: T) {
-  const result = [] as {
-    [key in keyof T]: T[key];
-  }[keyof T][];
-  for (const k of allKeys(x)) result.push(x[k]);
-  return result;
+export function values<T extends Record<PropertyKey, unknown>>(object: T) {
+  return Object.values(object) as T[keyof T][];
 }
 
-export function allEntries<T extends Record<Key, any>>(x: T) {
-  const result = [] as {
+export function entries<T extends Record<PropertyKey, unknown>>(object: T) {
+  return Object.entries(object) as {
     [key in keyof T]: [key, T[key]];
   }[keyof T][];
-  for (const k of allKeys(x)) result.push([k, x[k]]);
+}
+
+export function allKeys<T extends Record<PropertyKey, unknown>>(object: T) {
+  return Reflect.ownKeys(object) as (keyof T)[];
+}
+
+export function allValues<T extends Record<PropertyKey, unknown>>(object: T) {
+  const result = [] as { [key in keyof T]: T[key] }[keyof T][];
+  for (const k of allKeys(object)) result.push(object[k]);
   return result;
 }
 
-export function unwrapAll<T extends Record<Key, { value(): any }>>(x: T) {
+export function allEntries<T extends Record<PropertyKey, unknown>>(object: T) {
+  const result = [] as { [key in keyof T]: [key, T[key]] }[keyof T][];
+  for (const k of allKeys(object)) result.push([k, object[k]]);
+  return result;
+}
+
+export function unwrapAll<T extends Record<PropertyKey, { value(): any }>>(
+  object: T
+) {
   const result = {} as {
     [key in keyof T]: ReturnType<T[key]["value"]>;
   };
-  for (const [k, v] of allEntries(x)) result[k] = v.value();
+  for (const [k, v] of allEntries(object)) result[k] = v.value();
   return result;
 }
