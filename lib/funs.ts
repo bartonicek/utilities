@@ -78,10 +78,12 @@ export function compareAlphaNumeric(x: string, y: string) {
 
 // Array functions
 
-export function seq(start: number, end: number) {
-  const length = Math.abs(end - start) + 1;
+export function seq(start: number, end: number, length?: number) {
+  const range = Math.abs(end - start);
+  length = length ?? Math.ceil(range) + 1;
+  const inc = range / (length - 1);
   const sign = end >= start ? 1 : -1;
-  return Array.from(Array(length), (_, i) => start + sign * i);
+  return Array.from(Array(length), (_, i) => start + sign * inc * i);
 }
 
 export function minMax(x: number[]): [number, number] {
