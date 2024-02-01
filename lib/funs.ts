@@ -1,6 +1,4 @@
-// Higher-orderish functions
-
-import { Dict } from "./types";
+import { Contstructor, Dict } from "./types";
 
 /**
  * Takes a value and returns it lazily.
@@ -149,8 +147,6 @@ export function subsetOn<T extends Dict>(dict: T) {
  */
 export const element = unary(document.createElement.bind(document));
 
-// Unary functions
-
 /**
  * Computes the square of a number.
  *
@@ -178,6 +174,17 @@ export function squareRoot(x: number) {
  */
 export function inc(x: number) {
   return x + 1;
+}
+
+/**
+ * Returns a function that multiplies numbers by `x`.
+ * @param x The multiplier
+ * @returns A function that multiplies numbers by the multiplier
+ */
+export function times(x: number) {
+  return function (y: number) {
+    return x * y;
+  };
 }
 
 /**
@@ -210,8 +217,6 @@ export async function fetchJSON(path: string): Promise<unknown> {
   return await (await fetch(path)).json();
 }
 
-// Text manipulation functions
-
 /**
  * Capitalizes a string.
  *
@@ -221,8 +226,6 @@ export async function fetchJSON(path: string): Promise<unknown> {
 export function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
-
-// Binary functions
 
 /**
  * Computes a difference between two numbers.
@@ -267,8 +270,6 @@ export function compareAlphaNumeric(x: string, y: string) {
   return x.localeCompare(y, "en", { numeric: true });
 }
 
-// Other numeric functions
-
 /**
  * Truncates a value between `min` and `max`.
  *
@@ -291,7 +292,14 @@ export function trunc0to1(value: number) {
   return trunc(value, 0, 1);
 }
 
-// Array functions
+/**
+ * Returns the last element of an array.
+ * @param array An arbitrary array
+ * @returns The last element
+ */
+export function last<T>(array: T[]) {
+  return array[array.length - 1];
+}
 
 /**
  * Returns an ascending/descending sequence of numbers. If `length` is unspecified
@@ -367,8 +375,6 @@ export function match<T>(array: T[], lookup: T[]) {
   for (let i = 0; i < array.length; i++) result.push(lookup.indexOf(array[i]));
   return result;
 }
-
-// Object functions
 
 /**
  * Returns typed keys of an object.
@@ -452,4 +458,150 @@ export function unwrapAll<T extends Record<PropertyKey, { value(): any }>>(
   };
   for (const [k, v] of allEntries(object)) result[k] = v.value();
   return result;
+}
+
+/**
+ * Throttle a function to only fire once within a time-window.
+ *
+ * @param fn A function
+ * @param period A period in ms
+ * @returns A version of the function that only fires once within each period
+ */
+export function throttle(fn: Function, period: number) {
+  let lastTime = 0;
+  return (...args: any[]) => {
+    const now = new Date().getTime();
+    if (now - lastTime < period) return;
+    lastTime = now;
+    fn(...args);
+  };
+}
+
+/**
+ * Merge values from one set into another.
+ *
+ * @param target Target set
+ * @param source Source set
+ * @returns The target set with values merged
+ */
+export function mergeIntoSet<T>(target: Set<T>, source: Set<T>) {
+  for (const v of source) target.add(v);
+  return target;
+}
+
+/**
+ * Applies multiple mixins in a single go (works well as a decorator).
+ * The mixins can depend on one another, e.g. `@applyMixins([foo, bar])`
+ * will first apply `foo`, and `bar` can then make use of methods from `foo`.
+ *
+ * @param mixins An array of mixins
+ * @returns A function that applies the mixins to a base class.
+ */
+export function applyMixins<T extends Contstructor<unknown>>(
+  mixins: ((Base: T) => T)[]
+) {
+  return function (Base: T) {
+    return mixins.reduce((base, fn) => fn(base), Base);
+  };
+}
+
+/**
+ * Inverts numerical range defined by limits and returns new limits
+ * such scaling 0 and 1 will return the original limits.
+ * I.e. if we define a scaling function:
+ * `const scale = (value) => (value - newMin) / (newMax - newMin)`),
+ * then `scale(0) === min` and `scale(1) === max`.
+ *
+ * @param min Lower limit of the range
+ * @param max Upper limit of the range
+ * @returns A tuple with limits of the new range (`min`, `max`),
+ * and a `scalingFactor` (by how much does inverting the original range shrink/expand it)
+ */
+export function invertRange(
+  min: number,
+  max: number
+): [min: number, max: number, scaleFactor: number] {
+  const rangeInverse = 1 / (max - min);
+  return [-min * rangeInverse, rangeInverse - min * rangeInverse, rangeInverse];
+}
+
+/**
+ * An algorithm to compute "pretty" breaks (i.e. ones defined by
+ * multiples of neat values, 1, 2, 5, or 10)
+ * from a given numerical range. Inspired by the `pretty()` function from base R.
+ *
+ * @param min Lower limit of the range
+ * @param max Upper limit of the range
+ * @param n Number of breaks (optional, used only as a rough guide)
+ * @returns An array of pretty break points within the range.
+ * The lower and upper limits of the pretty breaks may be different
+ * (but within) the original range and their number may be different from `n`.
+ */
+export function prettyBreaks(min: number, max: number, n = 4) {
+  const unitGross = (max - min) / n;
+  const base = Math.floor(Math.log10(unitGross));
+
+  const neatUnits = [1, 2, 4, 5, 10];
+  let [minDist, neatValue] = [Infinity, 0];
+
+  // Find the nearest neat unit to the gross unit
+  for (let i = 0; i < neatUnits.length; i++) {
+    const dist = (neatUnits[i] * 10 ** base - unitGross) ** 2;
+    if (dist < minDist) [minDist, neatValue] = [dist, neatUnits[i]];
+  }
+
+  const unitNeat = 10 ** base * neatValue;
+
+  const minNeat = Math.ceil(min / unitNeat) * unitNeat;
+  const maxNeat = Math.floor(max / unitNeat) * unitNeat;
+
+  const newN = Math.round((maxNeat - minNeat) / unitNeat);
+  const breaks = [] as number[];
+
+  for (let i = 0; i < newN + 1; i++) {
+    const value = minNeat + i * unitNeat;
+    breaks.push(value);
+  }
+
+  breaks.push(maxNeat);
+
+  return breaks;
+}
+
+const sups: Record<string, string> = {
+  "-": "⁻",
+  "+": "",
+  0: "⁰",
+  1: "¹",
+  2: "²",
+  3: "³",
+  4: "⁴",
+  5: "⁵",
+  6: "⁶",
+  7: "⁷",
+  8: "⁸",
+  9: "⁹",
+};
+
+/**
+ * Converts a number to its superscript representation (unicode).
+ *
+ * @param n
+ * @returns
+ */
+export function convertToSuperscript(n: string) {
+  return n.split("").map(subsetOn(sups)).join("");
+}
+
+/**
+ * Turns a number in exponential/scientific notation (e.g. `1.2+e4`)
+ * to its superscript-formatted equivalent (`1.2×10³⁴`).
+ *
+ * @param n A string of a number in scientific notation
+ * @returns A string in superscript-based format
+ */
+export function exponentialToSuperscript(n: string) {
+  let [base, exponent] = n.split("e");
+  exponent = convertToSuperscript(exponent);
+  return base + "×10" + exponent;
 }
