@@ -32,7 +32,7 @@ export type MapFn<T, U> = (next: T) => U;
 export type ReduceFn<T, U> = (prev: U, next: T) => U;
 
 /** A constructor of a class `T`. */
-export type Constructor<T> = new (...args: any) => T;
+export type Constructor<T> = new (...args: any[]) => T;
 
 /** A rectangle defined by the coordinates of the four corners.*/
 export type Rect = [x0: number, y0: number, x1: number, y1: number];
