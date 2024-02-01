@@ -1,4 +1,4 @@
-import { Contstructor, Dict } from "./types";
+import { Constructor, Dict } from "./types";
 
 /**
  * Takes a value and returns it lazily.
@@ -497,7 +497,7 @@ export function mergeIntoSet<T>(target: Set<T>, source: Set<T>) {
  * @param mixins An array of mixins
  * @returns A function that applies the mixins to a base class.
  */
-export function applyMixins<T extends Contstructor<unknown>>(
+export function applyMixins<T extends Constructor<unknown>>(
   mixins: ((Base: T) => T)[]
 ) {
   return function (Base: T) {
