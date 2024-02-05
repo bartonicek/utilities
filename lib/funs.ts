@@ -340,8 +340,11 @@ export function minMax(x: number[]): [number, number] {
  * @returns A array of equal length
  */
 export function cumsum(array: number[]) {
-  const result = [array[0]] as number[];
-  for (let i = 1; i < array.length; i++) array.push(array[i] + result[i - 1]);
+  const result = [] as number[];
+  result.push(array[0]);
+  for (let i = 1; i < array.length; i++) {
+    result.push(result[i - 1] + array[i]);
+  }
   return result;
 }
 
